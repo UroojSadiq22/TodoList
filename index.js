@@ -1,27 +1,30 @@
 #! /usr/bin/env node
 import inquirer from "inquirer";
+import chalk from "chalk";
 let todos = [];
 let condition = true;
+console.log(chalk.magenta.bold.italic("\n Welcome to My Todo App \n"));
+await new Promise((resolve) => setTimeout(resolve, 2000));
 while (condition) {
     let addTask = await inquirer.prompt([
         {
             name: "todo",
             type: "input",
-            message: "What do you want to add in your Todos?",
+            message: chalk.yellow("What do you want to add in your Todos?"),
         },
     ]);
     if (addTask.todo.trim() !== "") {
         todos.push(addTask.todo);
-        console.log(todos);
+        console.log(`${todos}\n`);
     }
     else {
-        console.log("Invalid Todo! Please write the correct one");
+        console.log(chalk.red("Invalid Todo! Please write the correct one\n"));
         continue; // Skip the rest of the loop iteration and ask again for input
     }
     let addMore = await inquirer.prompt({
         name: "addmore",
         type: "confirm",
-        message: "Do you want to add more in your Todos?",
+        message: chalk.yellow("Do you want to add more in your Todos?"),
         default: false,
     });
     condition = addMore.addmore;
@@ -30,98 +33,80 @@ let repeat = true;
 while (repeat) {
     let operationAnswer = await inquirer.prompt({
         name: "operation",
-        message: "please select option",
+        message: chalk.yellow("please select option"),
         type: "list",
-        choices: ["add more", "read", "delete", "update"],
+        choices: ["Add More", "Read", "Delete", "Update"],
     });
-    if (operationAnswer.operation === "add more") {
+    if (operationAnswer.operation === "Add More") {
         let condition = true;
         while (condition) {
             let addTask = await inquirer.prompt([
                 {
                     name: "todo",
                     type: "input",
-                    message: "What do you want to add in your Todos?",
+                    message: chalk.yellow("What do you want to add in your Todos?"),
                 },
             ]);
             if (addTask.todo.trim() !== "") {
                 todos.push(addTask.todo);
-                console.log(todos);
+                console.log(`${todos}\n`);
             }
             else {
-                console.log("Invalid Todo! Please write the correct one");
-                continue; // Skip the rest of the loop iteration and ask again for input
+                console.log(chalk.red("Invalid Todo! Please write the correct one\n"));
+                continue; // Same purpose as above continue
             }
             let addMore = await inquirer.prompt({
                 name: "addmore",
                 type: "confirm",
-                message: "Do you want to add more in your Todos?",
+                message: chalk.yellow("Do you want to add more in your Todos?"),
                 default: false,
             });
             condition = addMore.addmore;
         }
     }
-    if (operationAnswer.operation === "read") {
-        let readTodo = await inquirer.prompt({
-            name: "read",
-            type: "confirm",
-            message: "Do you want to see the list of your Todos?",
-            default: false,
-        });
-        if (readTodo.read) {
-            todos.forEach((i) => console.log(i));
-        }
+    if (operationAnswer.operation === "Read") {
+        todos.forEach((i) => console.log(chalk.green(i)));
+        console.log("\n");
     }
-    else if (operationAnswer.operation === "delete") {
-        let delTodo = await inquirer.prompt({
-            name: "delete",
-            type: "confirm",
-            message: "Do you want to delete any Todos?",
-            default: false,
+    else if (operationAnswer.operation === "Delete") {
+        let delChoice = await inquirer.prompt({
+            name: "deleteTodo",
+            type: "list",
+            message: chalk.yellow("Choose the item to delete:"),
+            choices: todos,
         });
-        if (delTodo.delete) {
-            let delChoice = await inquirer.prompt({
-                name: "deleteTodo",
+        todos = todos.filter((i) => i !== delChoice.deleteTodo);
+        console.log(chalk.red.italic("Todo deleted! "), "Your Remaining Todos are:");
+        todos.forEach((i) => console.log(chalk.green(i)));
+        console.log("\n");
+    }
+    else if (operationAnswer.operation === "Update") {
+        let update = await inquirer.prompt([
+            {
+                name: "updateTodo",
                 type: "list",
-                message: "Choose the item to delete:",
+                message: chalk.yellow("Choose the item to update:"),
                 choices: todos,
-            });
-            todos = todos.filter((i) => i !== delChoice.deleteTodo);
-            console.log("Todo deleted! Your Remaining Todos are:");
-            todos.forEach((i) => console.log(i));
-        }
-    }
-    else if (operationAnswer.operation === "update") {
-        let updateTodo = await inquirer.prompt({
-            name: "update",
-            type: "confirm",
-            message: "Do you want to update any Todos?",
-            default: false,
-        });
-        if (updateTodo.update) {
-            let update = await inquirer.prompt([
-                {
-                    name: "updateTodo",
-                    type: "list",
-                    message: "Choose the item to delete:",
-                    choices: todos,
-                },
-                {
-                    name: "newTodo",
-                    type: "input",
-                    message: "Enter the new todo item",
-                },
-            ]);
-            todos = todos.map((i) => (i === update.updateTodo ? update.newTodo : i));
-            console.log("Todo updated! Your Updated Todos are:");
-            todos.forEach((i) => console.log(i));
-        }
+            },
+            {
+                name: "newTodo",
+                type: "input",
+                message: chalk.yellow("Enter the new todo item"),
+            },
+        ]);
+        todos = todos.map((i) => (i === update.updateTodo ? update.newTodo : i));
+        console.log(chalk.green.italic("Todo updated! "), " Your Updated Todos are:");
+        todos.forEach((i) => console.log(chalk.green(i)));
+        console.log("\n");
     }
     let repeatAgain = await inquirer.prompt({
         name: "again",
         type: "confirm",
-        message: "Do you want to perform again operation?",
+        message: chalk.yellow("Do you want to perform again operation?"),
         default: false,
     });
+    if (repeatAgain.again === false) {
+        console.log(chalk.magenta.italic("Thank You! Looking forward for the next time."));
+    }
     repeat = repeatAgain.again;
 }
